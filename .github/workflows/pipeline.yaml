@@ -1,0 +1,49 @@
+name: Engineering Pipeline CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run Unit & Integration Tests
+        run: |
+          pytest tests/
+
+      - name: Run Simulation Sweep
+        run: |
+          python simulations/sweep.py
+
+      - name: Run Analysis
+        run: |
+          python analysis/compare_runs.py
+
+      - name: Run Visualization
+        run: |
+          python visualization/plot_simulations.py
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: engineering-artifacts
+          path: |
+            artifacts/
+            results/
