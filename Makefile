@@ -17,6 +17,10 @@ analyze:
 visualize:
 	.venv/bin/python scripts/visualize.py
 
+# Run Design Optimization (Calibration)
+optimize:
+	.venv/bin/python scripts/calibrate.py
+
 pipeline: test sweep analyze visualize
 
 # CI-like sweep for local validation

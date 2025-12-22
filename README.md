@@ -55,6 +55,12 @@ make sweep
 # Output: results/runs/
 ```
 
+**Run Design Optimization:**
+```bash
+make optimize
+# Output: Finds 'alpha' for a target temperature.
+```
+
 **Analyze Results:**
 ```bash
 make analyze
