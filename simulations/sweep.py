@@ -149,7 +149,8 @@ def main():
     
     print(f"Found {len(combinations)} parameter combinations to sweep.")
     
-    results_dir = os.path.join(project_root, 'results')
+    results_dir = os.path.join(project_root, 'results', 'runs')
+    os.makedirs(results_dir, exist_ok=True)
     
     for combo in combinations:
         # Merge base params with sweep overrides

@@ -7,5 +7,6 @@ venv/
 
 # Project
 results/
-artifacts/
+artifacts/*
+!artifacts/README.md
 .DS_Store
