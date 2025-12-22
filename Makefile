@@ -1,4 +1,4 @@
-.PHONY: setup test sweep analyze visualize pipeline clean all
+.PHONY: setup test sweep analyze visualize pipeline ci-local clean all
 
 # Setup proper environment
 setup:
@@ -10,21 +10,30 @@ setup:
 test:
 	.venv/bin/pytest tests/
 
-# Run the parameter sweep simulation
+# Run the parameter sweep simulation (Standard)
 sweep:
 	.venv/bin/python simulations/sweep.py
 
 # Run the analysis script to aggregate results
 analyze:
-	.venv/bin/python analysis/compare_runs.py
+	.venv/bin/python scripts/analyze.py
 
 # Generate plotting artifacts
 visualize:
-	.venv/bin/python visualization/plot_simulations.py
+	.venv/bin/python scripts/visualize.py
 
-# Run the full pipeline (Local CI simulation)
+# Run the full pipeline (Standard Sweep)
 pipeline: test sweep analyze visualize
-	@echo "Pipeline completed successfully."
+	@echo "Standard Pipeline completed successfully."
+
+# Run the CI pipeline locally (Fast Sweep)
+ci-local:
+	@echo "Running Local CI Simulation..."
+	.venv/bin/pytest -q tests/
+	SWEEP_CONFIG=configs/sweep_ci.yaml OUTPUT_ROOT=results/runs_ci .venv/bin/python simulations/sweep.py
+	RESULTS_ROOT=results/runs_ci .venv/bin/python scripts/analyze.py
+	RESULTS_ROOT=results/runs_ci .venv/bin/python scripts/visualize.py
+	@echo "Local CI Pipeline completed. Check results/runs_ci and artifacts/."
 
 # Clean up results and artifacts
 clean:

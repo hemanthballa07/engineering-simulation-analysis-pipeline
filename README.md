@@ -18,13 +18,13 @@ This repository demonstrates a professional engineering software workflow:
 
 ```text
 ├── configs/          # YAML configuration files (base parameters + sweep ranges)
-├── simulations/      # Core solver logic and sweep runner
-├── analysis/         # Scripts to aggregate results into summary tables
-├── visualization/    # Plotting scripts for artifacts
-├── tests/            # Unit and integration tests (pytest)
-├── scripts/          # Helper scripts (pipeline runner)
-├── results/          # (Generated) Raw output: metadata.json, timeseries.csv, metrics.json
-├── artifacts/        # (Generated) Final reports and plots (PNG, CSV, MD)
+├── simulations/      # Core solver logic + sweep runner
+├── analysis/         # Metrics library and aggregation logic
+├── visualization/    # Plotting scripts
+├── tests/            # Pytest suite (Unit + Integration)
+├── scripts/          # Pipeline runner scripts (analyze.py, visualize.py)
+├── results/          # Generated output (metadata.json, metrics.json, timeseries.csv)
+├── artifacts/        # Generated reports and plots (PNG, CSV, MD)
 └── .github/          # CI/CD workflow configuration
 ```
 
@@ -45,33 +45,21 @@ pip install -r requirements.txt
 ```bash
 make pipeline
 ```
-This runs: **Tests** -> **Sweep** -> **Analysis** -> **Visualization**.
+This runs: **Tests** → **Sweep** → **Analysis** → **Visualization**.
 
-### 3. View Results
-Check the `artifacts/` folder:
-- `summary.md`: A summary table of all runs and their metrics.
-- `temp_profiles.png`: Comparision of temperature profiles.
-- `metric_sweep.png`: Parameter sensitivity plot.
+### 3. Run Fast CI Simulation Locally
+To test the CI workflow locally (using a smaller parameter set):
+```bash
+make ci-local
+```
 
 ## ⚙️ Configuration
 
-### `configs/base.yaml`
-Defines the default physical parameters:
-```yaml
-simulation:
-  L: 1.0
-  nx: 50
-  alpha: 0.1
-  t_max: 0.5
-```
-
-### `configs/sweep.yaml`
-Defines parameters to vary:
-```yaml
-sweep:
-  alpha: [0.01, 0.1, 1.0]
-  nx: [20, 50]
-```
+- **Results**: Stored in `results/runs/` by default.
+- **Config**:
+    - `configs/base.yaml`: Default physical parameters ($L=1.0, nx=50, \alpha=0.1$).
+    - `configs/sweep.yaml`: Production parameter sweep ranges.
+    - `configs/sweep_ci.yaml`: Fast sweep ranges for CI.
 
 ## 📊 Method
 
@@ -83,14 +71,13 @@ $$ \frac{\partial T}{\partial t} = \alpha \frac{\partial^2 T}{\partial x^2} $$
 - **Method**: Explicit Finite Difference (FTCS).
 - **Stability**: Automated check guarantees $r = \frac{\alpha \Delta t}{\Delta x^2} \le 0.5$.
 
-## 🤖 CI/CD
+## 🤖 CI/CD Automation
 
 The project includes a GitHub Actions workflow (`.github/workflows/pipeline.yaml`) that triggers on push:
-1.  Installs dependencies.
-2.  Runs Unit Tests (`pytest`).
-3.  Executes the Parameter Sweep.
-4.  Generates Analysis & Plots.
-5.  Uploads `results/` and `artifacts/` as build artifacts.
+1.  **Tests**: Runs `pytest`.
+2.  **CI Sweep**: Runs `simulations/sweep.py` with `configs/sweep_ci.yaml`.
+3.  **Analysis**: Aggregates results from compliance runs.
+4.  **Artifacts**: Uploads plots and summary tables to GitHub Actions Artifacts.
 
 ## 📋 Artifact Examples
 
