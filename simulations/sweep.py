@@ -6,6 +6,9 @@ import csv
 import hashlib
 import json
 import numpy as np
+import subprocess
+import platform
+import datetime
 
 # Add project root to path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -17,20 +20,23 @@ except ModuleNotFoundError:
     pd = None
 
 from simulations.solver import HeatEquationSolver1D
+# Import new metrics library
+from analysis.metrics import compute_run_metrics, load_timeseries
 
 def load_config(path):
     with open(path, 'r') as f:
         return yaml.safe_load(f)
 
+def get_git_revision_hash():
+    try:
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
+    except Exception:
+        return None
+
 def get_stable_id(params):
     """Generate a stable ID based on parameter values."""
-    # filtering out 'save_interval' from hash if it doesn't affect physics? 
-    # But strictly speaking different interval = different output files.
-    # Let's simple hash the whole sorted dictionary.
-    
     # Ensure standard types for hashing
     clean_params = params.copy()
-    # Normalize potential float representations if needed, but for now simple json dump
     param_str = json.dumps(clean_params, sort_keys=True)
     return hashlib.md5(param_str.encode('utf-8')).hexdigest()[:8]
 
@@ -60,7 +66,7 @@ def run_simulation(params, output_base_dir):
         
         results = solver.solve(save_interval=save_interval)
         
-        # Save results
+        # Save results (FileSystem)
         run_dir = os.path.join(output_base_dir, run_id)
         os.makedirs(run_dir, exist_ok=True)
         
@@ -85,41 +91,40 @@ def run_simulation(params, output_base_dir):
                     writer.writeheader()
                     writer.writerows(data)
                     
-        # 2. Save Config/Metadata used for this run
-        # Merge calculated dt/nt into params for record keeping
+        # 2. Enrich and Save Metadata
         run_metadata = params.copy()
+        
+        # Enriched fields
         run_metadata['actual_dt'] = solver.dt
         run_metadata['steps'] = solver.nt
         run_metadata['run_id'] = run_id
+        run_metadata['git_commit_hash'] = get_git_revision_hash()
+        run_metadata['python_version'] = platform.python_version()
+        run_metadata['platform'] = platform.system()
+        run_metadata['created_at'] = datetime.datetime.utcnow().isoformat()
         
         with open(os.path.join(run_dir, "metadata.json"), 'w') as f:
             json.dump(run_metadata, f, indent=2)
             
-        # 3. Compute and Save Metrics
-        # Analysis of the FINAL state
-        final_t, final_u = results[-1]
+        # 3. Compute Metrics (Strictly from CSV/Saved State)
+        # We rely on the analysis library to compute metrics
+        # Load back the data we just saved (or use in-memory df equivalent if we trust it matches)
+        # For strict compliance "metrics must be computed from timeseries.csv", we'll reload.
         
-        # Global stats across history could also be useful, but let's stick to final or aggregation
-        max_temp_all = max(np.max(u) for _, u in results)
-        max_temp_final = np.max(final_u)
-        avg_temp_final = np.mean(final_u)
-        # Total energy ~ Integral(T dx) ~ sum(T)*dx
-        total_energy_final = np.sum(final_u) * solver.dx
-        
-        metrics = {
-            "max_temp_global": float(max_temp_all),
-            "max_temp_final": float(max_temp_final),
-            "avg_temp_final": float(avg_temp_final),
-            "total_energy_final": float(total_energy_final),
-            "convergence_steps": solver.nt,
-            "final_time": float(final_t),
-            "dx": float(solver.dx),
-            "dt": float(solver.dt)
-        }
-        
-        with open(os.path.join(run_dir, "metrics.json"), 'w') as f:
-            json.dump(metrics, f, indent=2)
+        if pd:
+            loaded_df = load_timeseries(csv_path)
+            metrics = compute_run_metrics(loaded_df, solver.dx, solver.dt, alpha)
             
+            with open(os.path.join(run_dir, "metrics.json"), 'w') as f:
+                json.dump(metrics, f, indent=2)
+                
+        else:
+            # Fallback if no pandas (simpler inline or skip)
+            # requirement says "Use clear, testable code". 
+            # If no pandas, we might skip or read csv manually. 
+            # Given we installed pandas in requirements, we assume it's there.
+            print("Warning: Pandas not found, skipping metrics generation.")
+
         print(f"  -> Run {run_id} completed. Saved to {run_dir}")
         return True
         
@@ -152,7 +157,7 @@ def main():
         for i, key in enumerate(keys):
             current_params[key] = combo[i]
             
-        # Run simulation (ID generation moved inside)
+        # Run simulation
         run_simulation(current_params, results_dir)
 
 if __name__ == "__main__":
