@@ -1,93 +1,87 @@
 # Engineering Simulation & Analysis Pipeline
 
-A Python-based simulation and analysis pipeline for running parameter sweeps, comparing engineering design variants (Heat Equation), and producing reproducible evaluation artifacts with CI/CD automation.
+![Build Status](https://github.com/hemanthballa07/engineering-simulation-analysis-pipeline/actions/workflows/pipeline.yaml/badge.svg)
+![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
 
-![GitHub Actions](https://img.shields.io/badge/CI-GitHub%20Actions-blue)
-![Python](https://img.shields.io/badge/Python-3.9%2B-green)
+## Overview
 
-## 🚀 Overview
+This repository implements a professional-grade simulation pipeline for the 1D Heat Equation. It demonstrates end-to-end engineering practices including numerical solvers, reproducible parameter sweeps, data aggregation, automated visualization, and Continuous Integration (CI).
 
-This repository demonstrates a professional engineering software workflow:
-1.  **Simulation**: Solves the 1D Heat Equation (`dT/dt = alpha * d2T/dx2`) using a finite difference method.
-2.  **Experimentation**: Runs automated parameter sweeps (cartesian product of configuration).
-3.  **Analysis**: Aggregates metrics (energy, max temp, convergence) into summary reports.
-4.  **Visualization**: Automatically generates temperature profiles and parameter sensitivity plots.
-5.  **Automation**: Full CI/CD pipeline via GitHub Actions.
+**Key Capabilities:**
+- **Simulation**: Explicit Finite Difference solver with stability enforcement.
+- **Experimentation**: YAML-driven parameter sweeps for design space exploration.
+- **Analysis**: Aggregation of metrics (convergence, energy, stability) into summary reports.
+- **Visualization**: Automated generation of temperature profiles and sensitivity plots.
+- **CI/CD**: GitHub Actions pipeline validating the entire flow on every commit.
 
-## 📂 Directory Structure
+## Directory Structure
 
 ```text
-├── configs/          # YAML configuration files (base parameters + sweep ranges)
-├── simulations/      # Core solver logic + sweep runner
-├── analysis/         # Metrics library and aggregation logic
-├── visualization/    # Plotting scripts
-├── tests/            # Pytest suite (Unit + Integration)
-├── scripts/          # Pipeline runner scripts (analyze.py, visualize.py)
-├── results/          # Generated output (metadata.json, metrics.json, timeseries.csv)
-├── artifacts/        # Generated reports and plots (PNG, CSV, MD)
-└── .github/          # CI/CD workflow configuration
+├── configs/          # Simulation configurations (base and sweep)
+├── simulations/      # Source code for solver and sweep logic
+├── analysis/         # Metrics computation and aggregation scripts
+├── visualization/    # Plotting logic
+├── tests/            # Pytest test suite
+├── scripts/          # Orchestration scripts (analyze, visualize)
+├── results/          # Local simulation outputs (gitignored)
+├── artifacts/        # Generated reports and plots (gitignored)
+├── Makefile          # Developer convenience commands
+└── .github/          # CI pipeline configuration
 ```
 
-## 🛠️ Quick Start
+## Local Usage
 
-### 1. Setup Environment
+### Prerequisites
+- Python 3.9+
+
+### 1. Setup
+Create a virtual environment and install dependencies:
 ```bash
-# Using Make (Recommended)
 make setup
-
-# Or manual
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
 ```
 
-### 2. Run the Full Pipeline
+### 2. Run Pipeline
+Execute the full workflow (Tests -> Sweep -> Analyze -> Visualize):
 ```bash
 make pipeline
 ```
-This runs: **Tests** → **Sweep** → **Analysis** → **Visualization**.
 
-### 3. Run Fast CI Simulation Locally
-To test the CI workflow locally (using a smaller parameter set):
+### 3. Individual Steps
+You can run individual stages of the pipeline:
+
+**Run a Parameter Sweep:**
 ```bash
-make ci-local
+make sweep
+# Output: results/runs/
 ```
 
-## ⚙️ Configuration
+**Analyze Results:**
+```bash
+make analyze
+# Output: artifacts/summary.csv, artifacts/summary.md
+```
 
-- **Results**: Stored in `results/runs/` by default.
-- **Config**:
-    - `configs/base.yaml`: Default physical parameters ($L=1.0, nx=50, \alpha=0.1$).
-    - `configs/sweep.yaml`: Production parameter sweep ranges.
-    - `configs/sweep_ci.yaml`: Fast sweep ranges for CI.
+**Generate Visualizations:**
+```bash
+make visualize
+# Output: artifacts/temp_profiles.png, artifacts/metric_sweep.png
+```
 
-## 📊 Method
+## Continuous Integration
 
-### Physics
-We solve the 1D transient heat conduction equation with Dirichlet boundary conditions ($T(0)=0, T(L)=0$) and an initial Gaussian peak.
-$$ \frac{\partial T}{\partial t} = \alpha \frac{\partial^2 T}{\partial x^2} $$
+The repository is configured with GitHub Actions (`.github/workflows/pipeline.yaml`). On every `push` and `pull_request`, the system:
+1.  Sets up the environment.
+2.  Runs the test suite (`pytest`).
+3.  Executes a fast "CI-specific" parameter sweep (`configs/sweep_ci.yaml`).
+4.  Aggregates metrics and generates plots.
+5.  Uploads the resulting artifacts for review.
 
-### Solver
-- **Method**: Explicit Finite Difference (FTCS).
-- **Stability**: Automated check guarantees $r = \frac{\alpha \Delta t}{\Delta x^2} \le 0.5$.
+## Outputs
 
-## 🤖 CI/CD Automation
+After running the pipeline, the following artifacts are generated in the `artifacts/` directory:
 
-The project includes a GitHub Actions workflow (`.github/workflows/pipeline.yaml`) that triggers on push:
-1.  **Tests**: Runs `pytest`.
-2.  **CI Sweep**: Runs `simulations/sweep.py` with `configs/sweep_ci.yaml`.
-3.  **Analysis**: Aggregates results from compliance runs.
-4.  **Artifacts**: Uploads plots and summary tables to GitHub Actions Artifacts.
-
-## 📋 Artifact Examples
-
-### Temperature Profiles
-*(Generated image placed in artifacts/temp_profiles.png)*
-<img src="artifacts/temp_profiles.png" width="600" alt="Temperature Profiles">
-
-### Parameter Sweep Analysis
-*(Generated image placed in artifacts/metric_sweep.png)*
-<img src="artifacts/metric_sweep.png" width="600" alt="Metric Sweep">
-
----
-*Created by Antigravity*
+-   `summary.csv`: Comprehensive metrics for all simulation runs.
+-   `summary.md`: Markdown summary table of results.
+-   `top_runs.md`: Ranking of runs based on energy minimization.
+-   `temp_profiles.png`: Overlay plot of final temperature profiles.
+-   `metric_sweep.png`: Scatter plot showing parameter sensitivity.
