@@ -1,0 +1,8 @@
+# Default simulation parameters
+simulation:
+  L: 1.0           # Length of domain
+  nx: 50           # Number of spatial points
+  alpha: 0.1       # Thermal diffusivity
+  t_max: 0.5       # Total simulation time
+  dt: null         # Time step (null = auto-calc for stability)
+  save_interval: 20 # Save results every N steps

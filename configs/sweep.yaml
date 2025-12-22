@@ -1,0 +1,5 @@
+# Parameter sweep configuration
+# Lists of values to iterate over
+sweep:
+  alpha: [0.01, 0.1, 1.0]
+  nx: [20, 50]
