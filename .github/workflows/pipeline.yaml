@@ -1,4 +1,4 @@
-name: Engineering Pipeline CI
+name: CI Pipeline
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -24,26 +25,33 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
-      - name: Run Unit & Integration Tests
+      - name: Run Tests
         run: |
-          pytest tests/
+          pytest -q tests/
 
-      - name: Run Simulation Sweep
+      - name: Run CI Sweep
         run: |
+          export SWEEP_CONFIG=configs/sweep_ci.yaml
+          export OUTPUT_ROOT=results/runs_ci
           python simulations/sweep.py
 
       - name: Run Analysis
         run: |
-          python analysis/compare_runs.py
+          export RESULTS_ROOT=results/runs_ci
+          python scripts/analyze.py
 
       - name: Run Visualization
         run: |
-          python visualization/plot_simulations.py
+          export RESULTS_ROOT=results/runs_ci
+          python scripts/visualize.py
 
       - name: Upload Artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: engineering-artifacts
           path: |
             artifacts/
-            results/
+            # Uploading result configs for debug
+            results/runs_ci/*/metrics.json
+            results/runs_ci/*/metadata.json

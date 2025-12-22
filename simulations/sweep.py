@@ -134,7 +134,15 @@ def run_simulation(params, output_base_dir):
 
 def main():
     base_config_path = os.path.join(project_root, 'configs', 'base.yaml')
-    sweep_config_path = os.path.join(project_root, 'configs', 'sweep.yaml')
+    
+    # Allow overriding sweep config via env var
+    sweep_config_env = os.environ.get("SWEEP_CONFIG")
+    if sweep_config_env:
+        sweep_config_path = os.path.abspath(sweep_config_env)
+        print(f"Using sweep config from env: {sweep_config_path}")
+    else:
+        sweep_config_path = os.path.join(project_root, 'configs', 'sweep.yaml')
+        print(f"Using default sweep config: {sweep_config_path}")
     
     base_config = load_config(base_config_path)
     sweep_config = load_config(sweep_config_path)
@@ -149,7 +157,15 @@ def main():
     
     print(f"Found {len(combinations)} parameter combinations to sweep.")
     
-    results_dir = os.path.join(project_root, 'results', 'runs')
+    # Allow overriding output root via env var
+    output_root_env = os.environ.get("OUTPUT_ROOT")
+    if output_root_env:
+        results_dir = os.path.abspath(output_root_env)
+        print(f"Using output root from env: {results_dir}")
+    else:
+        results_dir = os.path.join(project_root, 'results', 'runs')
+        print(f"Using default output root: {results_dir}")
+        
     os.makedirs(results_dir, exist_ok=True)
     
     for combo in combinations:

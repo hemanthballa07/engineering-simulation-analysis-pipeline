@@ -10,7 +10,14 @@ from analysis.aggregate_runs import collect_runs, write_summary_artifacts
 
 
 def main():
-    results_root = Path(project_root) / "results" / "runs"
+    # Support overriding results root
+    results_root_env = os.environ.get("RESULTS_ROOT")
+    if results_root_env:
+        results_root = Path(results_root_env)
+        print(f"Using results root from env: {results_root}")
+    else:
+        results_root = Path(project_root) / "results" / "runs"
+        
     artifacts_dir = Path(project_root) / "artifacts"
 
     rows = collect_runs(results_root)

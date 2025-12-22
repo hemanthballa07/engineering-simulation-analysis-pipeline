@@ -32,7 +32,14 @@ def _extract_run_ids_from_top_runs(top_runs_md: Path, max_n: int = 5):
 
 
 def main():
-    results_root = Path(project_root) / "results" / "runs"
+    # Support overriding results root
+    results_root_env = os.environ.get("RESULTS_ROOT")
+    if results_root_env:
+        results_root = Path(results_root_env)
+        print(f"Using results root from env: {results_root}")
+    else:
+        results_root = Path(project_root) / "results" / "runs"
+        
     artifacts = Path(project_root) / "artifacts"
 
     summary_csv = artifacts / "summary.csv"
