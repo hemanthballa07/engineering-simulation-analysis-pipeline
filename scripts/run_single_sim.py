@@ -1,6 +1,10 @@
 import sys
 import os
-import pandas as pd
+import csv
+try:
+    import pandas as pd
+except ModuleNotFoundError:
+    pd = None
 import numpy as np
 
 # Add project root to path to ensure we can import simulation module
@@ -37,10 +41,7 @@ def main():
     output_dir = os.path.join(project_root, "results")
     os.makedirs(output_dir, exist_ok=True)
     
-    # Convert simulation history to flat DataFrame
-    # Format: time, x, temp (long format) or time, x0, x1... (wide format)
-    # Requirement asked for timeseries.parquet/csv. Wide format is usually easier for simple arrays.
-    
+    # Prepare data rows
     data = []
     for t, u in results:
         row = {'time': t}
@@ -48,13 +49,30 @@ def main():
             row[f'p{i}'] = val # p0, p1, ... pn for spatial points
         data.append(row)
     
-    df = pd.DataFrame(data)
     csv_path = os.path.join(output_dir, "single_run.csv")
-    df.to_csv(csv_path, index=False)
     
-    print(f"Simulation saved to {csv_path}")
-    print("Preview of first few rows:")
-    print(df.head())
+    if pd:
+        df = pd.DataFrame(data)
+        df.to_csv(csv_path, index=False)
+        print(f"Simulation saved to {csv_path} (using pandas)")
+        print("Preview of first few rows:")
+        print(df.head())
+    else:
+        # Fallback to csv module
+        if not data:
+            print("No data to save.")
+            return
+
+        fieldnames = list(data[0].keys())
+        with open(csv_path, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(data)
+        
+        print(f"Simulation saved to {csv_path} (using csv module)")
+        # Simple preview
+        print("Preview of first data row:")
+        print(data[0])
 
 if __name__ == "__main__":
     main()
