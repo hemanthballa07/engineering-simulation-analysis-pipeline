@@ -3,7 +3,8 @@ import os
 import itertools
 import yaml
 import csv
-import uuid
+import hashlib
+import json
 import numpy as np
 
 # Add project root to path
@@ -21,10 +22,23 @@ def load_config(path):
     with open(path, 'r') as f:
         return yaml.safe_load(f)
 
-def run_simulation(params, run_id, output_base_dir):
+def get_stable_id(params):
+    """Generate a stable ID based on parameter values."""
+    # filtering out 'save_interval' from hash if it doesn't affect physics? 
+    # But strictly speaking different interval = different output files.
+    # Let's simple hash the whole sorted dictionary.
+    
+    # Ensure standard types for hashing
+    clean_params = params.copy()
+    # Normalize potential float representations if needed, but for now simple json dump
+    param_str = json.dumps(clean_params, sort_keys=True)
+    return hashlib.md5(param_str.encode('utf-8')).hexdigest()[:8]
+
+def run_simulation(params, output_base_dir):
     """
     Run a single simulation with given params and save results.
     """
+    run_id = f"run_{get_stable_id(params)}"
     print(f"Starting run {run_id} with params: {params}")
     
     L = params.get('L', 1.0)
@@ -76,11 +90,35 @@ def run_simulation(params, run_id, output_base_dir):
         run_metadata = params.copy()
         run_metadata['actual_dt'] = solver.dt
         run_metadata['steps'] = solver.nt
+        run_metadata['run_id'] = run_id
         
         with open(os.path.join(run_dir, "metadata.json"), 'w') as f:
-            # Check availability of json module (standard lib)
-            import json
             json.dump(run_metadata, f, indent=2)
+            
+        # 3. Compute and Save Metrics
+        # Analysis of the FINAL state
+        final_t, final_u = results[-1]
+        
+        # Global stats across history could also be useful, but let's stick to final or aggregation
+        max_temp_all = max(np.max(u) for _, u in results)
+        max_temp_final = np.max(final_u)
+        avg_temp_final = np.mean(final_u)
+        # Total energy ~ Integral(T dx) ~ sum(T)*dx
+        total_energy_final = np.sum(final_u) * solver.dx
+        
+        metrics = {
+            "max_temp_global": float(max_temp_all),
+            "max_temp_final": float(max_temp_final),
+            "avg_temp_final": float(avg_temp_final),
+            "total_energy_final": float(total_energy_final),
+            "convergence_steps": solver.nt,
+            "final_time": float(final_t),
+            "dx": float(solver.dx),
+            "dt": float(solver.dt)
+        }
+        
+        with open(os.path.join(run_dir, "metrics.json"), 'w') as f:
+            json.dump(metrics, f, indent=2)
             
         print(f"  -> Run {run_id} completed. Saved to {run_dir}")
         return True
@@ -108,24 +146,14 @@ def main():
     
     results_dir = os.path.join(project_root, 'results')
     
-    # We could organize by sweep_id, but per requirement "results/<run_id>"
-    # Let's just create unique run_ids for now, or maybe timestamped folders?
-    # Requirement: "results/<run_id>/"
-    # Let's start with flat results folder for simplicity, or results/<timestamp_batch>/<run_id>?
-    # Requirement SAYS: "results/<run_id>/". We'll stick to that.
-    
     for combo in combinations:
         # Merge base params with sweep overrides
         current_params = base_params.copy()
         for i, key in enumerate(keys):
             current_params[key] = combo[i]
             
-        # Create unique run ID
-        # Format: run_{param1}_{param2}_uuid
-        # Short stable ID logic could be better, but UUID is safe.
-        run_id = f"run_{uuid.uuid4().hex[:8]}"
-        
-        run_simulation(current_params, run_id, results_dir)
+        # Run simulation (ID generation moved inside)
+        run_simulation(current_params, results_dir)
 
 if __name__ == "__main__":
     main()
