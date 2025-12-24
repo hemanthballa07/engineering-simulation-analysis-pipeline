@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 from pathlib import Path
 from observability.logging import get_logger, log_event
 

@@ -1,18 +1,31 @@
 # Engineering Simulation & Analysis Pipeline
 
+## What this is
+**Engineering Simulation & Analysis Platform (Cloud + SQL + AI + Observability)**
+A cloud-native analytics platform that runs parameter sweeps, persists artifacts to a data lake, loads results into SQL for analytics, generates validated decision metrics, and produces auditable AI summaries (prompt-logged + schema-validated). Includes a read-only API and Streamlit dashboard for exploring runs and comparisons, with correlation-ID structured logging and CI smoke tests.
+
+**Key capabilities**
+- **Cloud ecosystem**: Artifact persistence (Azure Blob) with safe no-op when creds absent
+- **Data Engineering**: SQL analytics layer + verified queries for aggregation and variant comparison
+- **Governance**: Validated metrics contract + physics sanity checks + golden dataset
+- **Decision Intelligence**: AI insights generation (audit logs + strict JSON schema validation)
+- **User Interface**: Read-only API + dashboard to explore runs/metrics/insights/compare
+- **Operations**: Structured logging + correlation IDs + CI pipeline smoke test (offline)
+
 ![Build Status](https://github.com/hemanthballa07/engineering-simulation-analysis-pipeline/actions/workflows/pipeline.yaml/badge.svg)
-![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)
 
-## Overview
+## 🏗️ Architecture
 
-This repository implements a professional-grade simulation pipeline for the 1D Heat Equation. It demonstrates end-to-end engineering practices including numerical solvers, reproducible parameter sweeps, data aggregation, automated visualization, and Continuous Integration (CI).
+```text
+Simulation Sweep → Artifacts → Azure Blob (optional)
+                → ETL → SQL DB → Analytics Queries
+                → Metrics Extraction + Validation
+                → AI Insights (prompt logged + schema validated)
+                → FastAPI → Streamlit Dashboard
+                → Observability + CI smoke artifacts
+```
 
-**Key Capabilities:**
-- **Simulation**: Explicit Finite Difference solver with stability enforcement.
-- **Experimentation**: YAML-driven parameter sweeps for design space exploration.
-- **Analysis**: Aggregation of metrics (convergence, energy, stability) into summary reports.
-- **Visualization**: Automated generation of temperature profiles and sensitivity plots.
-- **CI/CD**: GitHub Actions pipeline validating the entire flow on every commit.
+## Directory Structure
 
 ## Directory Structure
 
