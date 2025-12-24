@@ -1,7 +1,7 @@
-import os
+import logging
 import json
 from pathlib import Path
-import logging
+from observability.logging import get_logger, log_event
 
 try:
     from azure.storage.blob import BlobServiceClient
@@ -10,7 +10,7 @@ except ImportError:
     # Fallback for environments where azure-storage-blob isn't installed
     BlobServiceClient = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class AzureRunStorage:
     def __init__(self, connection_string=None, container_name="simulation-runs"):
