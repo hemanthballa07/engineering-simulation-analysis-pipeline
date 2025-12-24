@@ -2,12 +2,15 @@ import json
 import os
 import sys
 import argparse
-import jsonschema
-from pathlib import Path
-
 # Add project root to path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
+
+import jsonschema
+from pathlib import Path
+from observability.logging import get_logger, log_event
+
+logger = get_logger(__name__)
 
 SCHEMA_PATH = os.path.join(project_root, 'metrics', 'metrics_schema.json')
 
@@ -68,7 +71,7 @@ def main():
     args = parser.parse_args()
     
     if not os.path.exists(args.metrics_file):
-        print(f"File not found: {args.metrics_file}", file=sys.stderr)
+        log_event(logger, "validation_error", f"File not found: {args.metrics_file}")
         sys.exit(1)
         
     with open(args.metrics_file, 'r') as f:
@@ -77,10 +80,10 @@ def main():
     is_valid, errors = validate_run_metrics(payload)
     
     if is_valid:
-        print("PASS: Metrics are valid.")
+        log_event(logger, "metrics_validation_passed", "Metrics are valid.")
         sys.exit(0)
     else:
-        print("FAIL: Validation errors found:")
+        log_event(logger, "metrics_validation_failed", "Validation errors found", errors=errors)
         for err in errors:
             print(f"  - {err}")
         sys.exit(1)

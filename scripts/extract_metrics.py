@@ -2,12 +2,15 @@ import json
 import os
 import argparse
 import sys
-from pathlib import Path
-from datetime import datetime
-
 # Add project root to path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(project_root)
+
+from pathlib import Path
+from datetime import datetime
+from observability.logging import get_logger, log_event
+
+logger = get_logger(__name__)
 
 def extract_run_metrics(run_dir):
     """
@@ -94,12 +97,12 @@ def main():
         if args.output:
             with open(args.output, 'w') as f:
                 json.dump(payload, f, indent=2)
-            print(f"Metrics saved to {args.output}")
+            log_event(logger, "metrics_extracted", f"Metrics saved to {args.output}")
         else:
             print(json.dumps(payload, indent=2))
             
     except Exception as e:
-        print(f"Error extracting metrics: {e}", file=sys.stderr)
+        log_event(logger, "metrics_extraction_failed", f"Error extracting metrics: {e}", error=str(e))
         sys.exit(1)
 
 if __name__ == "__main__":

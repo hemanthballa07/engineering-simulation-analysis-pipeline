@@ -1,4 +1,4 @@
-.PHONY: setup test sweep analyze visualize pipeline ci-local clean all
+.PHONY: setup test sweep analyze visualize pipeline ci-local clean all api ui insights smoke
 
 setup:
 	python3 -m venv .venv
