@@ -91,3 +91,55 @@ After running the pipeline, the following artifacts are generated in the `artifa
 -   `top_runs.md`: Ranking of runs based on energy minimization.
 -   `temp_profiles.png`: Overlay plot of final temperature profiles.
 -   `metric_sweep.png`: Scatter plot showing parameter sensitivity.
+
+## 🏗️ Architecture (Platform Extension)
+The pipeline has been extended into a cloud-native platform:
+
+1.  **Simulation Engine**: Python-based verified numerical solver.
+2.  **Metrics Layer**: Semantic abstraction normalizing raw data into decision-ready metrics.
+3.  **Analytics Store**: SQL-based storage for large-scale aggregation.
+4.  **Cloud Storage**: Azure Blob Storage for artifact persistence.
+
+## 📊 Metrics Layer & Decision Readiness
+We use a **canonical metrics contract** (`metrics/metrics_schema.json`) to decouple the simulation engine from downstream consumers.
+-   **Performance Metrics**: `max_temperature`, `stability_ratio`.
+-   **Quality Metrics**: `converged`, `steps`.
+-   **Validation**: Every run is validated against physics constraints (e.g., $T_{max} \ge T_{min}$) before ingestion.
+
+## 🧠 AI-Assisted Insights (Azure OpenAI)
+The platform uses LLMs to act as a "Senior Principal Engineer", analyzing the validated metrics to generate actionable reports.
+
+### Configuration
+Set the following environment variables:
+```bash
+export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com/"
+export AZURE_OPENAI_API_KEY="your-key"
+export AZURE_OPENAI_DEPLOYMENT="gpt-4"
+# Or fallback to standard OpenAI
+export OPENAI_API_KEY="sk-..."
+```
+
+### Generation
+To generate insights for a batch of runs:
+```bash
+make insights
+```
+This generates `{run_id}.insights.json` and `{run_id}.insights.md` in the `insights/` folder.
+
+## 🖥️ API & Visualization (FastAPI + Streamlit)
+We provide a dedicated dashboard for exploring runs and AI insights.
+
+### 1. Start the API (Backend)
+The API serves validated artifacts and metrics.
+```bash
+make api
+# Running at http://localhost:8000
+# Docs at http://localhost:8000/docs
+```
+
+### 2. Start the Dashboard (Frontend)
+The UI connects to the local API to visualize results.
+```bash
+make ui
+# Opens in browser at http://localhost:8501
+```

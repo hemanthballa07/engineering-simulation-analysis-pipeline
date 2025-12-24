@@ -34,3 +34,17 @@ clean:
 	rm -rf results/* artifacts/*
 
 all: clean pipeline
+
+# --- Day 5: API & UI ---
+api:
+	.venv/bin/uvicorn api.app:app --reload --port 8000
+
+ui:
+	.venv/bin/streamlit run ui/dashboard.py
+
+insights:
+	.venv/bin/python scripts/generate_ai_insights.py --batch-dir results/runs
+
+# --- CI ---
+test-api:
+	.venv/bin/pytest tests/test_api.py
