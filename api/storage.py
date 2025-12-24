@@ -21,13 +21,26 @@ def get_run_metrics(run_id: str):
     Retrieves and VALIDATES the canonical metrics.json for a run.
     Returns: (payload, error_message)
     """
+
     # Try finding the run directory
     # Run ID is folder name in results/runs/ usually, but let's search or assume standard structure
-    run_dir = RESULTS_DIR / run_id
+    # Robust Lookup: Check main runs, then smoke runs, then ci runs
+    candidate_roots = [
+        RESULTS_DIR,
+        Path(project_root) / "results" / "runs_smoke",
+        Path(project_root) / "results" / "runs_ci"
+    ]
     
+    run_dir = None
+    for root in candidate_roots:
+        candidate = root / run_id
+        if candidate.exists():
+            run_dir = candidate
+            break
+            
     # Check if run exists
-    if not run_dir.exists():
-        return None, "Run directory not found."
+    if not run_dir or not run_dir.exists():
+        return None, "Run directory not found in known results paths."
 
     metrics_path = run_dir / "metrics.json" # Wait, Day 3 script (extract_metrics) puts it somewhere?
     # extract_metrics.py prints to stdout or file. 

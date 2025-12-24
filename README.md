@@ -139,11 +139,17 @@ make insights
 ```
 This generates `{run_id}.insights.json` and `{run_id}.insights.md` in the `insights/` folder.
 
-## 🖥️ API & Visualization (FastAPI + Streamlit)
-We provide a dedicated dashboard for exploring runs and AI insights.
+
+## 🖥️ Dashboard & Decision Platform (Soft UI)
+A professional-grade **Streamlit Dashboard** (`make ui`) provides a "Decision Platform" experience:
+
+- **Soft UI Design**: Modern "Cloud/Blue" aesthetic with 20px rounded cards, deep navy sidebar, and gradient hero indicators.
+- **Decision Engine**: Automatically computes "Decision Summaries" (e.g., *"Candidate is Safer and +15% Stable"*) in Comparison Mode.
+- **Metdata Dense**: Every view renders critical context (Grid Size, Time Step, Runtime) to build trust.
+- **Actionable AI**: Displays AI-generated executive summaries and allows on-demand insight generation.
 
 ### 1. Start the API (Backend)
-The API serves validated artifacts and metrics.
+The API serves validated artifacts and metrics, resiliently finding runs across local, smoke, or CI directories.
 ```bash
 make api
 # Running at http://localhost:8000
@@ -156,3 +162,13 @@ The UI connects to the local API to visualize results.
 make ui
 # Opens in browser at http://localhost:8501
 ```
+
+### 3. Generate Insights (Deterministically)
+To hydrate the dashboard with engineering assessments (functioning even without API keys via mock mode):
+```bash
+make insights
+```
+
+## 🛠️ Developer Tools & Cleanup
+- **Smoke Test**: `make smoke` (Runs full pipeline + API + UI check in isolation).
+- **Cleanup**: `make clean` (Removes generated artifacts).

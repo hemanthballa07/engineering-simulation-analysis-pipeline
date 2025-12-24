@@ -29,9 +29,11 @@ def test_pipeline_small_sweep(tmp_path):
     
     # 2. Execute
     # We pass the Path object converted to string as output_base_dir
-    success = run_simulation(params, str(runs_dir))
+    run_output_path = run_simulation(params, str(runs_dir))
     
-    assert success is True, "run_simulation should return True on success"
+    # Refactor Note: run_simulation now returns the path string on success, not True
+    assert run_output_path is not None, "run_simulation should return output path on success"
+    assert os.path.exists(run_output_path), "Output directory should exist"
     
     # 3. Verify Artifacts
     # Find the created run directory (should be run_<hash>)
