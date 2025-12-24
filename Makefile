@@ -48,3 +48,13 @@ insights:
 # --- CI ---
 test-api:
 	.venv/bin/pytest tests/test_api.py
+
+smoke:
+	@echo "Running Local Smoke Test..."
+	# 1. Fast Sweep
+	SWEEP_CONFIG=configs/sweep_ci.yaml OUTPUT_ROOT=results/runs_smoke .venv/bin/python simulations/sweep.py
+	# 2. Ingest
+	.venv/bin/python scripts/ingest_data.py --runs-dir results/runs_smoke
+	# 3. Mock AI
+	.venv/bin/python scripts/generate_ai_insights.py --batch-dir results/runs_smoke --mock
+	@echo "Smoke Test Complete. Check results/runs_smoke/"
