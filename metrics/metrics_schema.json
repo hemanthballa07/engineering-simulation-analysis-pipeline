@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Simulation Run Metrics",
+  "description": "Canonical schema for engineering simulation results",
+  "type": "object",
+  "required": [
+    "run_id",
+    "parameter_set",
+    "performance_metrics",
+    "quality_metrics",
+    "execution_metrics"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for the simulation run"
+    },
+    "parameter_set": {
+      "type": "object",
+      "required": ["alpha", "nx"],
+      "properties": {
+        "alpha": { "type": "number" },
+        "nx": { "type": "integer" },
+        "dt": { "type": ["number", "null"] },
+        "L": { "type": "number" },
+        "t_max": { "type": "number" }
+      }
+    },
+    "performance_metrics": {
+      "type": "object",
+      "required": ["max_temperature", "mean_temperature", "stability_ratio"],
+      "properties": {
+        "max_temperature": { "type": "number" },
+        "min_temperature": { "type": "number" },
+        "mean_temperature": { "type": "number" },
+        "energy_like_metric": { "type": "number" },
+        "stability_ratio": { "type": "number" }
+      }
+    },
+    "quality_metrics": {
+      "type": "object",
+      "required": ["converged", "steps"],
+      "properties": {
+        "converged": { "type": "boolean" },
+        "steps": { "type": "integer" },
+        "dx": { "type": "number" }
+      }
+    },
+    "execution_metrics": {
+      "type": "object",
+      "required": ["timestamp", "platform"],
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "runtime_ms": { "type": "number" },
+        "platform": { "type": "string" },
+        "git_commit": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

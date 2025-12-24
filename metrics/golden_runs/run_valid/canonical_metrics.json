@@ -1,0 +1,28 @@
+{
+  "run_id": "run_57cbee5c",
+  "parameter_set": {
+    "alpha": 0.01,
+    "nx": 50,
+    "dt": 0.01874219075385256,
+    "L": 1.0,
+    "t_max": 0.5
+  },
+  "performance_metrics": {
+    "max_temperature": 0.5779592905598637,
+    "min_temperature": 0.0,
+    "mean_temperature": 0.1736907124644182,
+    "energy_like_metric": 0.07283537208495958,
+    "stability_ratio": 0.45000000000000007
+  },
+  "quality_metrics": {
+    "converged": true,
+    "steps": 26,
+    "dx": 0.02040816326530612
+  },
+  "execution_metrics": {
+    "timestamp": "2025-12-22T23:02:36.077745",
+    "runtime_ms": 0.0,
+    "platform": "Darwin",
+    "git_commit": "dc9db6a6fd2c6efcbc229ab4c76296f000f95bbe"
+  }
+}
