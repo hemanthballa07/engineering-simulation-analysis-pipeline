@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Engineering Insights Contract",
+    "type": "object",
+    "required": [
+        "executive_summary",
+        "best_variant",
+        "tradeoffs",
+        "anomalies_or_risks",
+        "recommended_next_experiments",
+        "confidence_score",
+        "confidence_justification"
+    ],
+    "properties": {
+        "executive_summary": {
+            "type": "string",
+            "description": "High-level summary of the simulation run results suitable for engineering leadership."
+        },
+        "best_variant": {
+            "type": "object",
+            "required": [
+                "run_id",
+                "reason",
+                "key_metrics"
+            ],
+            "properties": {
+                "run_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "key_metrics": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "tradeoffs": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of identified trade-offs, e.g., 'Increasing alpha improved stability but reduced max temp'."
+        },
+        "anomalies_or_risks": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Potential issues like instability or non-physical results."
+        },
+        "recommended_next_experiments": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Suggestions for future parameter sweeps."
+        },
+        "confidence_score": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "AI confidence in the assessment (0-1)."
+        },
+        "confidence_justification": {
+            "type": "string",
+            "description": "Reason for the confidence score (e.g., 'Data complete and within normal ranges')."
+        }
+    }
+}
