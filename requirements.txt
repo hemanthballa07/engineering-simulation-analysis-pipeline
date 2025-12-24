@@ -8,3 +8,7 @@ azure-storage-blob
 azure-storage-blob
 jsonschema
 openai
+fastapi
+uvicorn
+streamlit
+httpx
