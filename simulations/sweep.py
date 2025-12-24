@@ -22,6 +22,8 @@ except ModuleNotFoundError:
 from simulations.solver import HeatEquationSolver1D
 # Import new metrics library
 from analysis.metrics import compute_run_metrics, load_timeseries
+# Import cloud storage
+from scripts.cloud_storage import AzureRunStorage
 
 def load_config(path):
     with open(path, 'r') as f:
@@ -126,11 +128,11 @@ def run_simulation(params, output_base_dir):
             print("Warning: Pandas not found, skipping metrics generation.")
 
         print(f"  -> Run {run_id} completed. Saved to {run_dir}")
-        return True
+        return run_dir
         
     except Exception as e:
         print(f"  -> Run {run_id} FAILED: {e}")
-        return False
+        return None
 
 def main():
     base_config_path = os.path.join(project_root, 'configs', 'base.yaml')
@@ -175,7 +177,15 @@ def main():
             current_params[key] = combo[i]
             
         # Run simulation
-        run_simulation(current_params, results_dir)
+        run_dir = run_simulation(current_params, results_dir)
+        
+        # Attempt upload if successful
+        if run_dir:
+            # Initialize storage (will log warning if disabled)
+            storage = AzureRunStorage()
+            if storage.is_enabled():
+                run_id = os.path.basename(run_dir)
+                storage.upload_run(run_id, run_dir)
 
 if __name__ == "__main__":
     main()

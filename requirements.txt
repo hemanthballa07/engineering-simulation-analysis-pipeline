@@ -4,3 +4,7 @@ matplotlib
 pyyaml
 pyarrow
 scipy
+azure-storage-blob
+azure-storage-blob
+jsonschema
+openai
